@@ -1,0 +1,63 @@
+use crate::ast;
+use std::str::FromStr;
+
+grammar;
+
+pub Program: Vec<ast::Statement> = Statement+ => <>;
+
+pub Statement: ast::Statement = {
+    Expression => ast::Statement::Expression(<>),
+    "(" "define" <id:ID> <e:Expression> ")" => ast::Statement::DefineStatement(ast::DefineStatement(id, e)),
+    PrintStatement => ast::Statement::PrintStatement(<>),
+}
+
+PrintStatement: ast::PrintStatement = {
+    "(" "print-num" <e:Expression> ")" => ast::PrintStatement::PrintNumber(e),
+    "(" "print-bool" <e:Expression> ")" => ast::PrintStatement::PrintBoolean(e),
+}
+
+pub Expression: Box<ast::Expression> = {
+    Bool => Box::new(ast::Expression::Boolean(<>)),
+    Num => Box::new(ast::Expression::Number(<>)),
+    ID => Box::new(ast::Expression::Variable(<>)),
+    NumOp => Box::new(ast::Expression::NumOperate(<>)),
+    LogicalOp => Box::new(ast::Expression::LogicalOperate(<>)),
+    FunctionExpression => Box::new(ast::Expression::FunctionExpression(<>)),
+    FunctionCall => Box::new(ast::Expression::FunctionCall(<>)),
+    IfExpression => Box::new(ast::Expression::IfExpression(<>)),
+}
+
+NumOp: ast::NumOperator = {
+    "(" "+" <v1:Expression> <v2:Expression+> ")" => ast::NumOperator::Plus(v1, v2),
+    "(" "-" <v1:Expression> <v2:Expression> ")" => ast::NumOperator::Minus(v1, v2),
+    "(" "*" <v1:Expression> <v2:Expression+> ")" => ast::NumOperator::Multiply(v1, v2),
+    "(" "/" <v1:Expression> <v2:Expression> ")" => ast::NumOperator::Divide(v1, v2),
+    "(" "mod" <v1:Expression> <v2:Expression> ")" => ast::NumOperator::Modulus(v1, v2),
+    "(" ">" <v1:Expression> <v2:Expression> ")" => ast::NumOperator::Greater(v1, v2),
+    "(" "<" <v1:Expression> <v2:Expression> ")" => ast::NumOperator::Smaller(v1, v2),
+    "(" "=" <v1:Expression> <v2:Expression+> ")" => ast::NumOperator::Equal(v1, v2),
+}
+
+LogicalOp: ast::LogicalOperator = {
+    "(" "and" <v1:Expression> <v2:Expression+> ")" => ast::LogicalOperator::And(v1, v2),
+    "(" "or" <v1:Expression> <v2:Expression+> ")" => ast::LogicalOperator::Or(v1, v2),
+    "(" "not" <v:Expression> ")" => ast::LogicalOperator::Not(v),
+}
+
+FunctionExpression: ast::FunctionExpression = "(" "fun" "(" <ids:ID*> ")" <e:Expression> ")" => ast::FunctionExpression(ids, e);
+
+FunctionCall: ast::FunctionCall = {
+    "(" <fe:FunctionExpression> <e:Expression*> ")" => ast::FunctionCall::ExpressionCall(fe, e),
+    "(" <id:ID> <e:Expression*> ")" => ast::FunctionCall::NameCall(id, e),
+}
+
+IfExpression: ast::IfExpression = "(" "if" <test_exp:Expression> <than_exp:Expression> <else_exp:Expression> ")" => ast::IfExpression(test_exp, than_exp, else_exp);
+
+Num: i32 = r"(0|[1-9]\d*|-[1-9]\d*)" => i32::from_str(<>).unwrap();
+
+ID: String = r"[a-z]([a-z]|\d|-)*" => String::from(<>);
+
+Bool: bool = {
+    "#t" => true,
+    "#f" => false,
+}
