@@ -55,7 +55,7 @@ IfExpression: Box<ast::IfExpression> = "(" "if" <test_exp:Expression> <than_exp:
 
 Num: i32 = r"(0|[1-9]\d*|-[1-9]\d*)" => i32::from_str(<>).unwrap();
 
-ID: String = r"[a-z]([a-z]|\d|-)*" => String::from(<>);
+ID: Box<String> = r"[a-z]([a-z]|\d|-)*" => Box::new(String::from(<>));
 
 Bool: bool = {
     "#t" => true,

@@ -1,6 +1,6 @@
-pub struct DefineStatement(pub String, pub Box<Expression>);
+pub struct DefineStatement(pub Box<String>, pub Box<Expression>);
 
-pub struct FunctionExpression(pub Box<Vec<String>>, pub Box<Expression>);
+pub struct FunctionExpression(pub Box<Vec<Box<String>>>, pub Box<Expression>);
 
 pub struct IfExpression(
     pub Box<Expression>,
@@ -21,13 +21,13 @@ pub enum PrintStatement {
 
 pub enum FunctionCall {
     ExpressionCall(Box<FunctionExpression>, Vec<Box<Expression>>),
-    NameCall(String, Vec<Box<Expression>>),
+    NameCall(Box<String>, Vec<Box<Expression>>),
 }
 
 pub enum Expression {
     Number(i32),
     Boolean(bool),
-    Variable(String),
+    Variable(Box<String>),
     NumOperate(Box<NumOperator>),
     LogicalOperate(Box<LogicalOperator>),
     FunctionExpression(Box<FunctionExpression>),
