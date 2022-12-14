@@ -3,17 +3,17 @@ use std::str::FromStr;
 
 grammar;
 
-pub Program: Vec<ast::Statement> = Statement+ => <>;
+pub Program: Box<Vec<Box<ast::Statement>>> = Statement+ => Box::new(<>);
 
-pub Statement: ast::Statement = {
-    Expression => ast::Statement::Expression(<>),
-    "(" "define" <id:ID> <e:Expression> ")" => ast::Statement::DefineStatement(ast::DefineStatement(id, e)),
-    PrintStatement => ast::Statement::PrintStatement(<>),
+pub Statement: Box<ast::Statement> = {
+    Expression => Box::new(ast::Statement::Expression(<>)),
+    "(" "define" <id:ID> <e:Expression> ")" => Box::new(ast::Statement::DefineStatement(Box::new(ast::DefineStatement(id, e)))),
+    PrintStatement => Box::new(ast::Statement::PrintStatement(<>)),
 }
 
-PrintStatement: ast::PrintStatement = {
-    "(" "print-num" <e:Expression> ")" => ast::PrintStatement::PrintNumber(e),
-    "(" "print-bool" <e:Expression> ")" => ast::PrintStatement::PrintBoolean(e),
+PrintStatement: Box<ast::PrintStatement> = {
+    "(" "print-num" <e:Expression> ")" => Box::new(ast::PrintStatement::PrintNumber(e)),
+    "(" "print-bool" <e:Expression> ")" => Box::new(ast::PrintStatement::PrintBoolean(e)),
 }
 
 pub Expression: Box<ast::Expression> = {
@@ -27,31 +27,31 @@ pub Expression: Box<ast::Expression> = {
     IfExpression => Box::new(ast::Expression::IfExpression(<>)),
 }
 
-NumOp: ast::NumOperator = {
-    "(" "+" <v1:Expression> <v2:Expression+> ")" => ast::NumOperator::Plus(v1, v2),
-    "(" "-" <v1:Expression> <v2:Expression> ")" => ast::NumOperator::Minus(v1, v2),
-    "(" "*" <v1:Expression> <v2:Expression+> ")" => ast::NumOperator::Multiply(v1, v2),
-    "(" "/" <v1:Expression> <v2:Expression> ")" => ast::NumOperator::Divide(v1, v2),
-    "(" "mod" <v1:Expression> <v2:Expression> ")" => ast::NumOperator::Modulus(v1, v2),
-    "(" ">" <v1:Expression> <v2:Expression> ")" => ast::NumOperator::Greater(v1, v2),
-    "(" "<" <v1:Expression> <v2:Expression> ")" => ast::NumOperator::Smaller(v1, v2),
-    "(" "=" <v1:Expression> <v2:Expression+> ")" => ast::NumOperator::Equal(v1, v2),
+NumOp: Box<ast::NumOperator> = {
+    "(" "+" <v1:Expression> <v2:Expression+> ")" => Box::new(ast::NumOperator::Plus(v1, v2)),
+    "(" "-" <v1:Expression> <v2:Expression> ")" => Box::new(ast::NumOperator::Minus(v1, v2)),
+    "(" "*" <v1:Expression> <v2:Expression+> ")" => Box::new(ast::NumOperator::Multiply(v1, v2)),
+    "(" "/" <v1:Expression> <v2:Expression> ")" => Box::new(ast::NumOperator::Divide(v1, v2)),
+    "(" "mod" <v1:Expression> <v2:Expression> ")" => Box::new(ast::NumOperator::Modulus(v1, v2)),
+    "(" ">" <v1:Expression> <v2:Expression> ")" => Box::new(ast::NumOperator::Greater(v1, v2)),
+    "(" "<" <v1:Expression> <v2:Expression> ")" => Box::new(ast::NumOperator::Smaller(v1, v2)),
+    "(" "=" <v1:Expression> <v2:Expression+> ")" => Box::new(ast::NumOperator::Equal(v1, v2)),
 }
 
-LogicalOp: ast::LogicalOperator = {
-    "(" "and" <v1:Expression> <v2:Expression+> ")" => ast::LogicalOperator::And(v1, v2),
-    "(" "or" <v1:Expression> <v2:Expression+> ")" => ast::LogicalOperator::Or(v1, v2),
-    "(" "not" <v:Expression> ")" => ast::LogicalOperator::Not(v),
+LogicalOp: Box<ast::LogicalOperator> = {
+    "(" "and" <v1:Expression> <v2:Expression+> ")" => Box::new(ast::LogicalOperator::And(v1, v2)),
+    "(" "or" <v1:Expression> <v2:Expression+> ")" => Box::new(ast::LogicalOperator::Or(v1, v2)),
+    "(" "not" <v:Expression> ")" => Box::new(ast::LogicalOperator::Not(v)),
 }
 
-FunctionExpression: ast::FunctionExpression = "(" "fun" "(" <ids:ID*> ")" <e:Expression> ")" => ast::FunctionExpression(ids, e);
+FunctionExpression: Box<ast::FunctionExpression> = "(" "fun" "(" <ids:ID*> ")" <e:Expression> ")" => Box::new(ast::FunctionExpression(Box::new(ids), e));
 
-FunctionCall: ast::FunctionCall = {
-    "(" <fe:FunctionExpression> <e:Expression*> ")" => ast::FunctionCall::ExpressionCall(fe, e),
-    "(" <id:ID> <e:Expression*> ")" => ast::FunctionCall::NameCall(id, e),
+FunctionCall: Box<ast::FunctionCall> = {
+    "(" <fe:FunctionExpression> <e:Expression*> ")" => Box::new(ast::FunctionCall::ExpressionCall(fe, e)),
+    "(" <id:ID> <e:Expression*> ")" => Box::new(ast::FunctionCall::NameCall(id, e)),
 }
 
-IfExpression: ast::IfExpression = "(" "if" <test_exp:Expression> <than_exp:Expression> <else_exp:Expression> ")" => ast::IfExpression(test_exp, than_exp, else_exp);
+IfExpression: Box<ast::IfExpression> = "(" "if" <test_exp:Expression> <than_exp:Expression> <else_exp:Expression> ")" => Box::new(ast::IfExpression(test_exp, than_exp, else_exp));
 
 Num: i32 = r"(0|[1-9]\d*|-[1-9]\d*)" => i32::from_str(<>).unwrap();
 
