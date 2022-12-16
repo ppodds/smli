@@ -649,6 +649,7 @@ impl Interpreter {
             let t = self.eval_statement(statement)?;
             if t.is_some() {
                 result.push_str(&t.unwrap());
+                result.push_str("\n");
             }
         }
         Ok(result)
