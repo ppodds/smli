@@ -342,4 +342,207 @@ mod tests {
         let mut interpreter = Interpreter::new();
         assert_eq!(interpreter.run(ast_tree), Ok("3".to_string()));
     }
+
+    #[test]
+    fn test_case_bonus_1_1() {
+        let parser = ProgramParser::new();
+        let ast_tree = parser
+            .parse(
+                r"(define fact
+  (fun (n) (if (< n 3) n
+               (* n (fact (- n 1))))))
+
+(print-num (fact 2))
+(print-num (fact 3))
+(print-num (fact 4))
+(print-num (fact 10))
+
+(define fib (fun (x)
+  (if (< x 2) x (+
+                 (fib (- x 1))
+                 (fib (- x 2))))))
+
+(print-num (fib 1))
+(print-num (fib 3))
+(print-num (fib 5))
+(print-num (fib 10))
+(print-num (fib 20))
+
+",
+            )
+            .unwrap();
+        let mut interpreter = Interpreter::new();
+        assert_eq!(
+            interpreter.run(ast_tree),
+            Ok(r"2
+6
+24
+3628800
+1
+2
+5
+55
+6765"
+                .to_string())
+        );
+    }
+
+    #[test]
+    fn test_case_bonus_1_2() {
+        let parser = ProgramParser::new();
+        let ast_tree = parser
+            .parse(
+                r"(define min
+  (fun (a b)
+    (if (< a b) a b)))
+
+(define max
+  (fun (a b)
+    (if (> a b) a b)))
+
+(define gcd
+  (fun (a b)
+    (if (= 0 (mod (max a b) (min a b)))
+        (min a b)
+        (gcd (min a b) (mod (max a b) (min a b))))))
+
+(print-num (gcd 100 88))
+
+(print-num (gcd 1234 5678))
+
+(print-num (gcd 81 54))
+
+",
+            )
+            .unwrap();
+        let mut interpreter = Interpreter::new();
+        assert_eq!(
+            interpreter.run(ast_tree),
+            Ok(r"4
+2
+27"
+            .to_string())
+        );
+    }
+
+    #[test]
+    fn test_case_bonus_2_1() {
+        let parser = ProgramParser::new();
+        let ast_tree = parser
+            .parse(
+                r"(+ 1 2 3 (or #t #f))
+
+",
+            )
+            .unwrap();
+        let mut interpreter = Interpreter::new();
+        assert_eq!(
+            interpreter.run(ast_tree),
+            Err("Type Error: Expect 'number' but got 'boolean'.".to_string())
+        );
+    }
+
+    #[test]
+    fn test_case_bonus_2_2() {
+        let parser = ProgramParser::new();
+        let ast_tree = parser
+            .parse(
+                r"(define f
+  (fun (x)
+    (if (> x 10) 10 (= x 5))))
+
+(print-num (* 2 (f 4)))
+
+",
+            )
+            .unwrap();
+        let mut interpreter = Interpreter::new();
+        assert_eq!(
+            interpreter.run(ast_tree),
+            Err("Type Error: Expect 'number' but got 'boolean'.".to_string())
+        );
+    }
+
+    #[test]
+    fn test_case_bonus_3_1() {
+        let parser = ProgramParser::new();
+        let ast_tree = parser
+            .parse(
+                r"(define dist-square
+  (fun (x y)
+    (define square (fun (x) (* x x)))
+    (+ (square x) (square y))))
+
+(print-num (dist-square 3 4))
+
+",
+            )
+            .unwrap();
+        let mut interpreter = Interpreter::new();
+        assert_eq!(interpreter.run(ast_tree), Ok("25".to_string()));
+    }
+
+    #[test]
+    fn test_case_bonus_3_2() {
+        let parser = ProgramParser::new();
+        let ast_tree = parser
+            .parse(
+                r"(define diff
+  (fun (a b)
+    (define abs
+      (fun (a)
+        (if (< a 0) (- 0 a) a)))
+    (abs (- a b))))
+
+(print-num (diff 1 10))
+(print-num (diff 10 2))
+
+",
+            )
+            .unwrap();
+        let mut interpreter = Interpreter::new();
+        assert_eq!(
+            interpreter.run(ast_tree),
+            Ok(r"9
+8"
+            .to_string())
+        );
+    }
+
+    #[test]
+    fn test_case_bonus_4_1() {
+        let parser = ProgramParser::new();
+        let ast_tree = parser
+            .parse(
+                r"(define add-x
+  (fun (x) (fun (y) (+ x y))))
+
+(define z (add-x 10))
+
+(print-num (z 1))
+
+",
+            )
+            .unwrap();
+        let mut interpreter = Interpreter::new();
+        assert_eq!(interpreter.run(ast_tree), Ok("11".to_string()));
+    }
+
+    #[test]
+    fn test_case_bonus_4_2() {
+        let parser = ProgramParser::new();
+        let ast_tree = parser
+            .parse(
+                r"(define foo
+  (fun (f x) (f x)))
+
+(print-num
+  (foo (fun (x) (- x 1)) 10))
+
+",
+            )
+            .unwrap();
+        let mut interpreter = Interpreter::new();
+        assert_eq!(interpreter.run(ast_tree), Ok("9".to_string()));
+    }
 }
