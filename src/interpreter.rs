@@ -644,15 +644,14 @@ impl Interpreter {
     }
 
     pub fn run(&mut self, program: Box<Vec<Box<ast::Statement>>>) -> Result<String, String> {
-        let mut result = String::new();
+        let mut result: Vec<String> = Vec::new();
         for statement in program.iter() {
             let t = self.eval_statement(statement)?;
             if t.is_some() {
-                result.push_str(&t.unwrap());
-                result.push_str("\n");
+                result.push(t.unwrap());
             }
         }
-        Ok(result)
+        Ok(result.join("\n"))
     }
 
     fn eval_statement(&mut self, statement: &ast::Statement) -> Result<Option<String>, String> {
