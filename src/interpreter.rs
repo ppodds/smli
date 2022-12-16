@@ -23,11 +23,6 @@ mod tests {
         assert!(interpreter
             .to_num(&interpreter::Value::Boolean(false))
             .is_err());
-        assert!(interpreter
-            .to_num(&interpreter::Value::Variable(Box::new(String::from(
-                "test"
-            ))),)
-            .is_err());
     }
 
     #[test]
@@ -43,11 +38,6 @@ mod tests {
         let interpreter = interpreter::Interpreter::new();
         assert!(interpreter
             .to_bool(&interpreter::Value::Number(10))
-            .is_err());
-        assert!(interpreter
-            .to_bool(&interpreter::Value::Variable(Box::new(String::from(
-                "test"
-            ))),)
             .is_err());
     }
 
@@ -612,7 +602,6 @@ mod tests {
 enum Value {
     Number(i32),
     Boolean(bool),
-    Variable(Box<String>),
     FunctionExpression(Box<ast::FunctionExpression>),
 }
 
@@ -636,14 +625,6 @@ fn validate_type(value: &Value, expected: &str) -> Result<(), String> {
             }
             Ok(())
         }
-        Value::Variable(_) => {
-            if expected != "variable" {
-                return Err(format!(
-                    "Type Error: Expect '{expected}' but got 'variable'."
-                ));
-            }
-            Ok(())
-        }
         Value::FunctionExpression(_) => {
             if expected != "function" {
                 return Err(format!(
@@ -662,11 +643,17 @@ impl Interpreter {
         }
     }
 
-    pub fn run(&mut self, program: Box<Vec<ast::Statement>>) -> Result<(), String> {
+    pub fn run(&mut self, program: Box<Vec<Box<ast::Statement>>>) -> bool {
         for statement in program.iter() {
-            self.eval_statement(statement)?;
+            match self.eval_statement(statement) {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("{}", e);
+                    return false;
+                }
+            }
         }
-        Ok(())
+        true
     }
 
     fn eval_statement(&mut self, statement: &ast::Statement) -> Result<(), String> {

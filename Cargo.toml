@@ -1,5 +1,5 @@
 [package]
-name = "project"
+name = "smli"
 version = "0.0.0"
 edition = "2021"
 resolver = "1"
