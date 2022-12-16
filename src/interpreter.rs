@@ -643,32 +643,31 @@ impl Interpreter {
         }
     }
 
-    pub fn run(&mut self, program: Box<Vec<Box<ast::Statement>>>) -> bool {
+    pub fn run(&mut self, program: Box<Vec<Box<ast::Statement>>>) -> Result<String, String> {
+        let mut result = String::new();
         for statement in program.iter() {
-            match self.eval_statement(statement) {
-                Ok(_) => {}
-                Err(e) => {
-                    println!("{}", e);
-                    return false;
-                }
+            let t = self.eval_statement(statement)?;
+            if t.is_some() {
+                result.push_str(&t.unwrap());
             }
         }
-        true
+        Ok(result)
     }
 
-    fn eval_statement(&mut self, statement: &ast::Statement) -> Result<(), String> {
+    fn eval_statement(&mut self, statement: &ast::Statement) -> Result<Option<String>, String> {
         match statement {
             ast::Statement::Expression(expression) => {
                 self.eval_expression(expression, None)?;
+                return Ok(None);
             }
             ast::Statement::DefineStatement(define_statement) => {
                 self.eval_define_statement(define_statement)?;
+                return Ok(None);
             }
             ast::Statement::PrintStatement(print_statement) => {
-                self.eval_print_statement(print_statement)?;
+                return Ok(Some(self.eval_print_statement(print_statement)?));
             }
         }
-        Ok(())
     }
 
     fn eval_expression(
@@ -807,18 +806,18 @@ impl Interpreter {
         Ok(())
     }
 
-    fn eval_print_statement(&self, statement: &ast::PrintStatement) -> Result<(), String> {
+    fn eval_print_statement(&self, statement: &ast::PrintStatement) -> Result<String, String> {
         match statement {
             ast::PrintStatement::PrintNumber(expression) => {
-                println!("{}", self.to_num(&self.eval_expression(expression, None)?)?);
-                Ok(())
+                Ok((self.to_num(&self.eval_expression(expression, None)?)?).to_string())
             }
             ast::PrintStatement::PrintBoolean(expression) => {
-                println!(
-                    "{}",
-                    self.to_bool(&self.eval_expression(expression, None)?)?
-                );
-                Ok(())
+                let result = self.to_bool(&self.eval_expression(expression, None)?)?;
+                if result {
+                    Ok(String::from("#t"))
+                } else {
+                    Ok(String::from("#f"))
+                }
             }
         }
     }

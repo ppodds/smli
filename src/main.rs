@@ -1,13 +1,6 @@
 use std::{env, fs, process::exit};
 
-#[macro_use]
-extern crate lalrpop_util;
-
-lalrpop_mod!(pub smli);
-
-mod ast;
-mod interpreter;
-mod parser;
+use smli::{grammer::ProgramParser, interpreter::Interpreter};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -23,7 +16,7 @@ fn main() {
             exit(1);
         }
     };
-    let parser = smli::ProgramParser::new();
+    let parser = ProgramParser::new();
     let ast_tree = match parser.parse(&content) {
         Ok(ast_tree) => ast_tree,
         Err(_) => {
@@ -31,9 +24,14 @@ fn main() {
             exit(1);
         }
     };
-    let mut interpreter = interpreter::Interpreter::new();
-    let success = interpreter.run(ast_tree);
-    if !success {
-        exit(1);
+    let mut interpreter = Interpreter::new();
+    match interpreter.run(ast_tree) {
+        Ok(result) => {
+            println!("{result}");
+        }
+        Err(e) => {
+            println!("{e}");
+            exit(1);
+        }
     }
 }
