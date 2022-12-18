@@ -783,7 +783,7 @@ impl Interpreter {
                         &Box::new(ast::Expression::FunctionCall(Box::new(
                             ast::FunctionCall::ExpressionCall(func, args.to_vec()),
                         ))),
-                        None,
+                        variables,
                     )?)
                 }
             },

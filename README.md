@@ -12,7 +12,7 @@ A mini-LISP interpreter written in Rust. This is a term project for the course "
 - [x] Variable Definition
 - [x] Function
 - [x] Named Function
-- [ ] Recursion
+- [x] Recursion
 - [x] Type Checking
 - [ ] Nested Function
 - [ ] First-class Function
