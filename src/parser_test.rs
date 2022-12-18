@@ -207,6 +207,7 @@ mod tests {
             Ok(Box::new(ast::Expression::FunctionExpression(Box::new(
                 ast::FunctionExpression(
                     Box::new(vec![Box::new("a".to_string()), Box::new("b".to_string())]),
+                    Box::new(vec![]),
                     Box::new(ast::Expression::NumOperate(Box::new(
                         ast::NumOperator::Plus(
                             Box::new(ast::Expression::Variable(Box::new("a".to_string()))),
@@ -232,6 +233,7 @@ mod tests {
                             Box::new("y".to_string()),
                             Box::new("z".to_string())
                         ]),
+                        Box::new(vec![]),
                         Box::new(ast::Expression::NumOperate(Box::new(
                             ast::NumOperator::Plus(
                                 Box::new(ast::Expression::Variable(Box::new("x".to_string()))),
@@ -280,6 +282,7 @@ mod tests {
                     Box::new(ast::Expression::FunctionExpression(Box::new(
                         ast::FunctionExpression(
                             Box::new(vec![Box::new("a".to_string()), Box::new("b".to_string())]),
+                            Box::new(vec![]),
                             Box::new(ast::Expression::NumOperate(Box::new(
                                 ast::NumOperator::Plus(
                                     Box::new(ast::Expression::Variable(Box::new("a".to_string()))),
@@ -302,6 +305,7 @@ mod tests {
                     Box::new(ast::Expression::FunctionExpression(Box::new(
                         ast::FunctionExpression(
                             Box::new(vec![Box::new("n".to_string())]),
+                            Box::new(vec![]),
                             Box::new(ast::Expression::IfExpression(Box::new(ast::IfExpression(
                                 Box::new(ast::Expression::NumOperate(Box::new(
                                     ast::NumOperator::Smaller(

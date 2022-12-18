@@ -1,8 +1,12 @@
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DefineStatement(pub Box<String>, pub Box<Expression>);
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct FunctionExpression(pub Box<Vec<Box<String>>>, pub Box<Expression>);
+pub struct FunctionExpression(
+    pub Box<Vec<Box<String>>>,
+    pub Box<Vec<Box<DefineStatement>>>,
+    pub Box<Expression>,
+);
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct IfExpression(

@@ -7,9 +7,11 @@ pub Program: Box<Vec<Box<ast::Statement>>> = Statement+ => Box::new(<>);
 
 pub Statement: Box<ast::Statement> = {
     Expression => Box::new(ast::Statement::Expression(<>)),
-    "(" "define" <id:ID> <e:Expression> ")" => Box::new(ast::Statement::DefineStatement(Box::new(ast::DefineStatement(id, e)))),
+    DefineStatement => Box::new(ast::Statement::DefineStatement(<>)),
     PrintStatement => Box::new(ast::Statement::PrintStatement(<>)),
 }
+
+DefineStatement: Box<ast::DefineStatement> = "(" "define" <id:ID> <e:Expression> ")" => Box::new(ast::DefineStatement(id, e));
 
 PrintStatement: Box<ast::PrintStatement> = {
     "(" "print-num" <e:Expression> ")" => Box::new(ast::PrintStatement::PrintNumber(e)),
@@ -44,7 +46,7 @@ LogicalOp: Box<ast::LogicalOperator> = {
     "(" "not" <v:Expression> ")" => Box::new(ast::LogicalOperator::Not(v)),
 }
 
-FunctionExpression: Box<ast::FunctionExpression> = "(" "fun" "(" <ids:ID*> ")" <e:Expression> ")" => Box::new(ast::FunctionExpression(Box::new(ids), e));
+FunctionExpression: Box<ast::FunctionExpression> = "(" "fun" "(" <ids:ID*> ")" <ds:DefineStatement*> <e:Expression> ")" => Box::new(ast::FunctionExpression(Box::new(ids), Box::new(ds), e));
 
 FunctionCall: Box<ast::FunctionCall> = {
     "(" <fe:FunctionExpression> <e:Expression*> ")" => Box::new(ast::FunctionCall::ExpressionCall(fe, e)),

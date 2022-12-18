@@ -474,6 +474,7 @@ mod tests {
                     ast::FunctionCall::ExpressionCall(
                         Box::new(ast::FunctionExpression(
                             Box::new(vec![Box::new("a".to_string()), Box::new("b".to_string())]),
+                            Box::new(vec![]),
                             Box::new(ast::Expression::NumOperate(Box::new(
                                 ast::NumOperator::Plus(
                                     Box::new(ast::Expression::Variable(Box::new("a".to_string()))),
@@ -504,6 +505,7 @@ mod tests {
                     ast::FunctionCall::ExpressionCall(
                         Box::new(ast::FunctionExpression(
                             Box::new(vec![Box::new("a".to_string()), Box::new("b".to_string())]),
+                            Box::new(vec![]),
                             Box::new(ast::Expression::NumOperate(Box::new(
                                 ast::NumOperator::Plus(
                                     Box::new(ast::Expression::Variable(Box::new("a".to_string()))),
@@ -526,6 +528,50 @@ mod tests {
     }
 
     #[test]
+    fn nested_function() {
+        let interpreter = interpreter::Interpreter::new();
+        assert_eq!(
+            interpreter.eval_expression(
+                &Box::new(ast::Expression::FunctionCall(Box::new(
+                    ast::FunctionCall::ExpressionCall(
+                        Box::new(ast::FunctionExpression(
+                            Box::new(vec![]),
+                            Box::new(vec![Box::new(ast::DefineStatement(
+                                Box::new("square".to_string()),
+                                Box::new(ast::Expression::FunctionExpression(Box::new(
+                                    ast::FunctionExpression(
+                                        Box::new(vec![Box::new("v".to_string())]),
+                                        Box::new(vec![]),
+                                        Box::new(ast::Expression::NumOperate(Box::new(
+                                            ast::NumOperator::Multiply(
+                                                Box::new(ast::Expression::Variable(Box::new(
+                                                    "v".to_string(),
+                                                ))),
+                                                vec![Box::new(ast::Expression::Variable(
+                                                    Box::new("v".to_string(),)
+                                                ))],
+                                            ),
+                                        ))),
+                                    )
+                                ))),
+                            ))]),
+                            Box::new(ast::Expression::FunctionCall(Box::new(
+                                ast::FunctionCall::NameCall(
+                                    Box::new("square".to_string()),
+                                    vec![Box::new(ast::Expression::Number(2))],
+                                ),
+                            ))),
+                        )),
+                        vec![],
+                    ),
+                ))),
+                None,
+            ),
+            Ok(interpreter::Value::Number(4))
+        );
+    }
+
+    #[test]
     fn define_function_variable() {
         let mut interpreter = interpreter::Interpreter::new();
         assert!(interpreter
@@ -535,6 +581,7 @@ mod tests {
                     Box::new(ast::Expression::FunctionExpression(Box::new(
                         ast::FunctionExpression(
                             Box::new(vec![Box::new("a".to_string())]),
+                            Box::new(vec![]),
                             Box::new(ast::Expression::NumOperate(Box::new(
                                 ast::NumOperator::Plus(
                                     Box::new(ast::Expression::Variable(Box::new("a".to_string()))),
@@ -570,6 +617,7 @@ mod tests {
                     Box::new(ast::Expression::FunctionExpression(Box::new(
                         ast::FunctionExpression(
                             Box::new(vec![Box::new("a".to_string())]),
+                            Box::new(vec![]),
                             Box::new(ast::Expression::NumOperate(Box::new(
                                 ast::NumOperator::Plus(
                                     Box::new(ast::Expression::Variable(Box::new("a".to_string()))),
@@ -686,7 +734,7 @@ impl Interpreter {
                         return Ok(variables.get(v.as_str()).unwrap().clone());
                     }
                 }
-                Ok(self.get_variable(v.as_str())?.clone())
+                Ok(self.get_variable(v.as_str(), variables)?.clone())
             }
             ast::Expression::NumOperate(op) => match &**op {
                 ast::NumOperator::Plus(exp, exps) => {
@@ -767,6 +815,13 @@ impl Interpreter {
                         ));
                     }
                     let mut scoped_variables = HashMap::new();
+                    // define nested function
+                    for define_statement in fe.1.iter() {
+                        scoped_variables.insert(
+                            define_statement.0.to_string(),
+                            self.eval_expression(&define_statement.1, variables)?,
+                        );
+                    }
                     // add new variables
                     let arg_names = &fe.0;
                     for i in 0..func_arg_len {
@@ -775,10 +830,10 @@ impl Interpreter {
                             self.eval_expression(&args[i], variables)?,
                         );
                     }
-                    Ok(self.eval_expression(&fe.1, Some(&scoped_variables))?)
+                    Ok(self.eval_expression(&fe.2, Some(&scoped_variables))?)
                 }
                 ast::FunctionCall::NameCall(id, args) => {
-                    let func = self.to_function(self.get_variable(id)?)?;
+                    let func = self.to_function(&self.get_variable(id, variables)?)?;
                     Ok(self.eval_expression(
                         &Box::new(ast::Expression::FunctionCall(Box::new(
                             ast::FunctionCall::ExpressionCall(func, args.to_vec()),
@@ -852,10 +907,23 @@ impl Interpreter {
         }
     }
 
-    fn get_variable(&self, id: &str) -> Result<&Value, String> {
-        match self.variables.get(id) {
-            Some(v) => Ok(v),
-            None => Err(format!("'{id}' is not defined.")),
+    fn get_variable(
+        &self,
+        id: &str,
+        variables: Option<&HashMap<String, Value>>,
+    ) -> Result<Value, String> {
+        fn get(id: &str, variables: &HashMap<String, Value>) -> Result<Value, String> {
+            match variables.get(id) {
+                Some(v) => return Ok(v.clone()),
+                None => return Err(format!("'{id}' is not defined.")),
+            }
         }
+        if variables.is_some() {
+            let result = get(id, variables.unwrap());
+            if result.is_ok() {
+                return Ok(result.ok().unwrap());
+            }
+        }
+        Ok(get(id, &self.variables)?)
     }
 }

@@ -14,7 +14,7 @@ A mini-LISP interpreter written in Rust. This is a term project for the course "
 - [x] Named Function
 - [x] Recursion
 - [x] Type Checking
-- [ ] Nested Function
+- [x] Nested Function
 - [ ] First-class Function
 
 ## Installation
