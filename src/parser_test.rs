@@ -272,6 +272,72 @@ mod tests {
                 )
             ))))
         );
+        assert_eq!(
+            grammer::StatementParser::new().parse("(define foo (fun (a b) (+ a b)))"),
+            Ok(Box::new(ast::Statement::DefineStatement(Box::new(
+                ast::DefineStatement(
+                    Box::new("foo".to_string()),
+                    Box::new(ast::Expression::FunctionExpression(Box::new(
+                        ast::FunctionExpression(
+                            Box::new(vec![Box::new("a".to_string()), Box::new("b".to_string())]),
+                            Box::new(ast::Expression::NumOperate(Box::new(
+                                ast::NumOperator::Plus(
+                                    Box::new(ast::Expression::Variable(Box::new("a".to_string()))),
+                                    vec![Box::new(ast::Expression::Variable(Box::new(
+                                        "b".to_string()
+                                    )))]
+                                )
+                            )))
+                        )
+                    )))
+                )
+            ))))
+        );
+        assert_eq!(
+            grammer::StatementParser::new()
+                .parse("(define fact (fun (n) (if (< n 3) n (* n (fact (- n 1))))))"),
+            Ok(Box::new(ast::Statement::DefineStatement(Box::new(
+                ast::DefineStatement(
+                    Box::new("fact".to_string()),
+                    Box::new(ast::Expression::FunctionExpression(Box::new(
+                        ast::FunctionExpression(
+                            Box::new(vec![Box::new("n".to_string())]),
+                            Box::new(ast::Expression::IfExpression(Box::new(ast::IfExpression(
+                                Box::new(ast::Expression::NumOperate(Box::new(
+                                    ast::NumOperator::Smaller(
+                                        Box::new(ast::Expression::Variable(Box::new(
+                                            "n".to_string()
+                                        ))),
+                                        Box::new(ast::Expression::Number(3))
+                                    )
+                                ))),
+                                Box::new(ast::Expression::Variable(Box::new("n".to_string()))),
+                                Box::new(ast::Expression::NumOperate(Box::new(
+                                    ast::NumOperator::Multiply(
+                                        Box::new(ast::Expression::Variable(Box::new(
+                                            "n".to_string()
+                                        ))),
+                                        vec![Box::new(ast::Expression::FunctionCall(Box::new(
+                                            ast::FunctionCall::NameCall(
+                                                Box::new("fact".to_string()),
+                                                vec![Box::new(ast::Expression::NumOperate(
+                                                    Box::new(ast::NumOperator::Minus(
+                                                        Box::new(ast::Expression::Variable(
+                                                            Box::new("n".to_string())
+                                                        )),
+                                                        Box::new(ast::Expression::Number(1))
+                                                    ))
+                                                ))]
+                                            )
+                                        )))]
+                                    )
+                                )))
+                            ))))
+                        )
+                    )))
+                )
+            ))))
+        );
     }
 
     #[test]
