@@ -726,16 +726,7 @@ impl Interpreter {
         match &**expression {
             ast::Expression::Number(v) => Ok(Value::Number(*v)),
             ast::Expression::Boolean(v) => Ok(Value::Boolean(*v)),
-            ast::Expression::Variable(v) => {
-                // this is a function call, so check if the variable is a function argument first
-                if variables.is_some() {
-                    let variables = variables.unwrap();
-                    if variables.contains_key(v.as_str()) {
-                        return Ok(variables.get(v.as_str()).unwrap().clone());
-                    }
-                }
-                Ok(self.get_variable(v.as_str(), variables)?.clone())
-            }
+            ast::Expression::Variable(v) => Ok(self.get_variable(v, variables)?),
             ast::Expression::NumOperate(op) => match &**op {
                 ast::NumOperator::Plus(exp, exps) => {
                     let mut result = self.to_num(&self.eval_expression(&exp, variables)?)?;
